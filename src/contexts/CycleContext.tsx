@@ -15,6 +15,7 @@ interface CreateFormData {
 }
 
 interface CyclesContextInterface {
+  cycles: Cycle[]
   activeCycle: Cycle | undefined
   activeCycleId: string | null
   defaultTitle: string
@@ -93,6 +94,7 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
   return (
     <CyclesContext.Provider
       value={{
+        cycles,
         activeCycle,
         activeCycleId,
         defaultTitle,
