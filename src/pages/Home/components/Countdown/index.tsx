@@ -1,13 +1,17 @@
 import { differenceInSeconds } from 'date-fns'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect } from 'react'
 import { CyclesContext } from '../..'
 import { CountdownContainer, Separator } from './styles'
 
 export function Countdown() {
-  const { activeCycle, activeCycleId, markCurrentCycleAsFinished } =
-    useContext(CyclesContext)
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-  const [defaultTitle, setDefaultTitle] = useState('')
+  const {
+    activeCycle,
+    activeCycleId,
+    markCurrentCycleAsFinished,
+    defaultTitle,
+    amountSecondsPassed,
+    setSecondsPassed,
+  } = useContext(CyclesContext)
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
 
@@ -18,10 +22,6 @@ export function Countdown() {
 
   const minutes = String(minutesAmount).padStart(2, '0')
   const seconds = String(secondsAmount).padStart(2, '0')
-
-  useEffect(() => {
-    setDefaultTitle(document.title)
-  }, [])
 
   useEffect(() => {
     if (activeCycle) {
@@ -39,21 +39,12 @@ export function Countdown() {
         )
 
         if (secondsDifference >= totalSeconds) {
-          // setCycles((state) =>
-          //   state.map((cycle) => {
-          //     if (cycle.id === activeCycleId) {
-          //       return { ...cycle, finishedDate: new Date() }
-          //     } else {
-          //       return cycle
-          //     }
-          //   }),
-          // )
           markCurrentCycleAsFinished()
-          setAmountSecondsPassed(totalSeconds)
+          setSecondsPassed(totalSeconds)
           document.title = defaultTitle
           clearInterval(intervalId)
         } else {
-          setAmountSecondsPassed(secondsDifference)
+          setSecondsPassed(secondsDifference)
         }
       }, 1000)
     }
@@ -61,7 +52,14 @@ export function Countdown() {
     return () => {
       clearInterval(intervalId)
     }
-  }, [activeCycle, totalSeconds, defaultTitle, activeCycleId])
+  }, [
+    activeCycle,
+    totalSeconds,
+    defaultTitle,
+    activeCycleId,
+    markCurrentCycleAsFinished,
+    setSecondsPassed,
+  ])
 
   return (
     <CountdownContainer>
