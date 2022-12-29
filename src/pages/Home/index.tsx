@@ -29,6 +29,7 @@ interface CyclesContextInterface {
   amountSecondsPassed: number
   markCurrentCycleAsFinished: () => void
   setSecondsPassed: (seconds: number) => void
+  setActiveCycleNull: () => void
 }
 
 const newCycleFormValidationSchema = zod.object({
@@ -95,6 +96,10 @@ export function Home() {
     setAmountSecondsPassed(seconds)
   }
 
+  function setActiveCycleNull() {
+    setActiveCycleId(null)
+  }
+
   function handleInterruptCycle() {
     setCycles((state) =>
       state.map((cycle) => {
@@ -123,6 +128,7 @@ export function Home() {
             amountSecondsPassed,
             markCurrentCycleAsFinished,
             setSecondsPassed,
+            setActiveCycleNull,
           }}
         >
           <FormProvider {...newCycleForm}>
