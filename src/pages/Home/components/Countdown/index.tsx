@@ -11,7 +11,6 @@ export function Countdown() {
     amountSecondsPassed,
     markCurrentCycleAsFinished,
     setSecondsPassed,
-    setActiveCycleNull,
   } = useContext(CyclesContext)
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
@@ -40,7 +39,6 @@ export function Countdown() {
         )
 
         if (secondsDifference >= totalSeconds) {
-          setActiveCycleNull()
           markCurrentCycleAsFinished()
           setSecondsPassed(totalSeconds)
           document.title = defaultTitle

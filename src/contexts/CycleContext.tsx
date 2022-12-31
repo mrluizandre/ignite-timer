@@ -5,15 +5,12 @@ import {
   useReducer,
   useState,
 } from 'react'
-
-interface Cycle {
-  id: string
-  task: string
-  minutesAmount: number
-  startDate: Date
-  interruptedDate?: Date
-  finishedDate?: Date
-}
+import { Cycle, cycleReducer } from '../reducers/cycles/reducer'
+import {
+  addNewCycleAction,
+  interruptCycleAction,
+  markCurrentCyclesAsFinishedAction,
+} from '../reducers/cycles/actions'
 
 interface CreateFormData {
   task: string
@@ -28,7 +25,6 @@ interface CyclesContextInterface {
   amountSecondsPassed: number
   markCurrentCycleAsFinished: () => void
   setSecondsPassed: (seconds: number) => void
-  setActiveCycleNull: () => void
   createNewCycle: (data: CreateFormData) => void
   interruptCycle: () => void
 }
@@ -37,53 +33,13 @@ interface CylesContextProviderProps {
   children: ReactNode
 }
 
-interface CyclesState {
-  cycles: Cycle[]
-  activeCycleId: string | null
-}
-
 export const CyclesContext = createContext({} as CyclesContextInterface)
 
 export function CyclesContextProvider({ children }: CylesContextProviderProps) {
-  const [cyclesState, dispatch] = useReducer(
-    (state: CyclesState, action: any) => {
-      switch (action.type) {
-        case 'ADD_NEW_CYCLE':
-          return {
-            ...state,
-            cycles: [...state.cycles, action.payload.newCycle],
-            activeCycleId: action.payload.newCycle.id,
-          }
-        case 'INTERRUPT_CURRENT_CYCLE':
-          return {
-            ...state,
-            cycles: state.cycles.map((cycle) => {
-              if (cycle.id === state.activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-            activeCycleId: null,
-          }
-        case 'MARK_CURRENT_CYCLE_AS_FINISHED':
-          return {
-            ...state,
-            cycles: state.cycles.map((cycle) => {
-              if (cycle.id === state.activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              } else {
-                return cycle
-              }
-            }),
-            activeCycleId: null,
-          }
-        default:
-          return state
-      }
-    },
-    { cycles: [], activeCycleId: null },
-  )
+  const [cyclesState, dispatch] = useReducer(cycleReducer, {
+    cycles: [],
+    activeCycleId: null,
+  })
 
   const [defaultTitle, setDefaultTitle] = useState('')
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
@@ -97,20 +53,11 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
   const activeCycle = cycles.find((c) => c.id === activeCycleId)
 
   function markCurrentCycleAsFinished() {
-    dispatch({
-      type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
-      payload: {
-        activeCycleId,
-      },
-    })
+    dispatch(markCurrentCyclesAsFinishedAction())
   }
 
   function setSecondsPassed(seconds: number) {
     setAmountSecondsPassed(seconds)
-  }
-
-  function setActiveCycleNull() {
-    // setActiveCycleId(null)
   }
 
   function createNewCycle(data: CreateFormData) {
@@ -120,36 +67,13 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
       minutesAmount: data.minutesAmount,
       startDate: new Date(),
     }
-
-    // setCycles((state) => [...state, newCycle])
-
-    dispatch({
-      type: 'ADD_NEW_CYCLE',
-      payload: {
-        newCycle,
-      },
-    })
+    dispatch(addNewCycleAction(newCycle))
 
     setAmountSecondsPassed(0)
   }
 
   function interruptCycle() {
-    // setCycles((state) =>
-    //   state.map((cycle) => {
-    //     if (cycle.id === activeCycleId) {
-    //       return { ...cycle, interruptedDate: new Date() }
-    //     } else {
-    //       return cycle
-    //     }
-    //   }),
-    // )
-
-    dispatch({
-      type: 'INTERRUPT_CURRENT_CYCLE',
-      payload: {
-        activeCycleId,
-      },
-    })
+    dispatch(interruptCycleAction())
     document.title = defaultTitle
   }
   return (
@@ -162,7 +86,6 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
         amountSecondsPassed,
         markCurrentCycleAsFinished,
         setSecondsPassed,
-        setActiveCycleNull,
         createNewCycle,
         interruptCycle,
       }}
