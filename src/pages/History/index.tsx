@@ -1,11 +1,16 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { CyclesContext } from '../Home'
 import { HistoryContainer, HistoryList, Status } from './styles'
 import { formatDistanceToNow } from 'date-fns'
 import ptBR from 'date-fns/locale/pt-BR'
 
 export function History() {
-  const { cycles } = useContext(CyclesContext)
+  const { cycles, defaultTitle } = useContext(CyclesContext)
+
+  useEffect(() => {
+    document.title = defaultTitle
+  })
+
   return (
     <HistoryContainer>
       <h1>Meu histórico</h1>
