@@ -37,19 +37,58 @@ interface CylesContextProviderProps {
   children: ReactNode
 }
 
+interface CyclesState {
+  cycles: Cycle[]
+  activeCycleId: string | null
+}
+
 export const CyclesContext = createContext({} as CyclesContextInterface)
 
 export function CyclesContextProvider({ children }: CylesContextProviderProps) {
-  const [cycles, dispatch] = useReducer((state: Cycle[], action: any) => {
-    if (action.type === 'ADD_NEW_CYCLE') {
-      return [...state, action.payload.newCycle]
-    }
-    return state
-  }, [])
+  const [cyclesState, dispatch] = useReducer(
+    (state: CyclesState, action: any) => {
+      switch (action.type) {
+        case 'ADD_NEW_CYCLE':
+          return {
+            ...state,
+            cycles: [...state.cycles, action.payload.newCycle],
+            activeCycleId: action.payload.newCycle.id,
+          }
+        case 'INTERRUPT_CURRENT_CYCLE':
+          return {
+            ...state,
+            cycles: state.cycles.map((cycle) => {
+              if (cycle.id === state.activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+            activeCycleId: null,
+          }
+        case 'MARK_CURRENT_CYCLE_AS_FINISHED':
+          return {
+            ...state,
+            cycles: state.cycles.map((cycle) => {
+              if (cycle.id === state.activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+            activeCycleId: null,
+          }
+        default:
+          return state
+      }
+    },
+    { cycles: [], activeCycleId: null },
+  )
 
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
   const [defaultTitle, setDefaultTitle] = useState('')
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+
+  const { cycles, activeCycleId } = cyclesState
 
   useEffect(() => {
     setDefaultTitle(document.title)
@@ -58,16 +97,6 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
   const activeCycle = cycles.find((c) => c.id === activeCycleId)
 
   function markCurrentCycleAsFinished() {
-    // setCycles((state) =>
-    //   state.map((cycle) => {
-    //     if (cycle.id === activeCycleId) {
-    //       return { ...cycle, finishedDate: new Date() }
-    //     } else {
-    //       return cycle
-    //     }
-    //   }),
-    // )
-
     dispatch({
       type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
       payload: {
@@ -81,7 +110,7 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
   }
 
   function setActiveCycleNull() {
-    setActiveCycleId(null)
+    // setActiveCycleId(null)
   }
 
   function createNewCycle(data: CreateFormData) {
@@ -101,7 +130,6 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
       },
     })
 
-    setActiveCycleId(newCycle.id)
     setAmountSecondsPassed(0)
   }
 
@@ -122,7 +150,6 @@ export function CyclesContextProvider({ children }: CylesContextProviderProps) {
         activeCycleId,
       },
     })
-    setActiveCycleId(null)
     document.title = defaultTitle
   }
   return (
